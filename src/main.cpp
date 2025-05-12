@@ -6,38 +6,90 @@
 constexpr blt::i32 SHIFTS_PER_WEEK = 5;
 constexpr blt::i32 POPULATION_SIZE = 100;
 
+blt::random::random_t& get_random()
+{
+	thread_local blt::random::random_t random{691};
+	return random;
+}
+
 enum class shift_t : blt::u8
 {
-	NONE, AMs, PMs
+	OFF, AMs, PMs
 };
 
-enum class weekday_t : blt::u8
+struct weekday_t
 {
-	SATURDAY,
-	SUNDAY,
-	MONDAY,
-	TUESDAY,
-	WEDNESDAY,
-	THURSDAY,
-	FRIDAY
-};
-
-bool days_require_pair(const weekday_t day)
-{
-	switch (day)
+	enum value_t : blt::u8
 	{
-		case weekday_t::SATURDAY:
-		case weekday_t::SUNDAY:
-			return true;
-		case weekday_t::MONDAY:
-		case weekday_t::TUESDAY:
-		case weekday_t::WEDNESDAY:
-		case weekday_t::THURSDAY:
-		case weekday_t::FRIDAY:
-			return false;
+		SATURDAY,
+		SUNDAY,
+		MONDAY,
+		TUESDAY,
+		WEDNESDAY,
+		THURSDAY,
+		FRIDAY
+	};
+
+	weekday_t() = default;
+
+	constexpr weekday_t(const value_t value) : value(value) // NOLINT
+	{}
+
+	constexpr operator value_t() const // NOLINT
+	{
+		return value;
 	}
-	BLT_UNREACHABLE;
-}
+
+	explicit operator bool() const = delete;
+
+	constexpr bool operator==(const weekday_t a) const
+	{
+		return value == a.value;
+	}
+
+	constexpr bool operator!=(const weekday_t a) const
+	{
+		return value != a.value;
+	}
+
+	[[nodiscard]] bool is_weekend() const
+	{
+		switch (value)
+		{
+			case SATURDAY:
+			case SUNDAY:
+				return true;
+			case MONDAY:
+			case TUESDAY:
+			case WEDNESDAY:
+			case THURSDAY:
+			case FRIDAY:
+				return false;
+		}
+		BLT_UNREACHABLE;
+	}
+
+	[[nodiscard]] std::vector<shift_t>& available_shifts() const
+	{
+		thread_local std::vector<shift_t> shifts;
+
+		shifts.clear();
+		if (is_weekend())
+		{
+			constexpr std::array weekend_shifts = {shift_t::AMs, shift_t::PMs, shift_t::AMs, shift_t::PMs};
+			shifts.insert(shifts.end(), weekend_shifts.begin(), weekend_shifts.end());
+			return shifts;
+		} else
+		{
+
+		}
+
+		return shifts;
+	}
+
+private:
+	value_t value;
+};
 
 struct placement_t
 {
@@ -50,22 +102,15 @@ struct placement_t
 
 struct day_t
 {
-	placement_t brett{shift_t::PMs, true};
+	placement_t brett;
 	placement_t kayda;
 	placement_t tim;
 	placement_t braeden;
 
 	weekday_t day;
 
-	[[nodiscard]] bool days_require_pair() const
-	{
-		return ::days_require_pair(day);
-	}
-
-	day_t(const placement_t& kayda, const placement_t& tim, const placement_t& braeden, const weekday_t day) : kayda{kayda},
-																																tim{tim},
-																																braeden{braeden},
-																																day{day}
+	day_t(const placement_t& brett, const placement_t& kayda, const placement_t& tim, const placement_t& braeden,
+		const weekday_t day): brett{brett}, kayda{kayda}, tim{tim}, braeden{braeden}, day{day}
 	{}
 };
 
@@ -82,26 +127,15 @@ struct week_t
 class shift_solver_t
 {
 public:
-	static placement_t
-
 	static day_t generate_random_day(const weekday_t day)
 	{
 		auto& random = get_random();
 		std::array<placement_t, 3> placements{};
 		if (days_require_pair(day))
-		{
-
-		} else
-		{
-
-		}
+		{} else
+		{}
 	}
 
-	static blt::random::random_t& get_random()
-	{
-		thread_local blt::random::random_t random{691};
-		return random;
-	}
 private:
 };
 
