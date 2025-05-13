@@ -3,8 +3,14 @@
 #include <blt/std/types.h>
 #include <blt/std/random.h>
 
-constexpr blt::i32 SHIFTS_PER_WEEK = 5;
+// 40 hours a week max
+constexpr blt::i32 INDIVIDUAL_SHIFTS_PER_WEEK = 5;
+// 4 people working at the park
+constexpr blt::i32 PEOPLE_TO_SCHEDULE = 4;
+constexpr blt::i32 TOTALS_SHIFTS_PER_WEEK = INDIVIDUAL_SHIFTS_PER_WEEK * PEOPLE_TO_SCHEDULE;
 constexpr blt::i32 POPULATION_SIZE = 100;
+
+// need to do some kind of route building algorithm?
 
 blt::random::random_t& get_random()
 {
@@ -69,72 +75,19 @@ struct weekday_t
 		BLT_UNREACHABLE;
 	}
 
-	[[nodiscard]] std::vector<shift_t>& available_shifts() const
-	{
-		thread_local std::vector<shift_t> shifts;
-
-		shifts.clear();
-		if (is_weekend())
-		{
-			constexpr std::array weekend_shifts = {shift_t::AMs, shift_t::PMs, shift_t::AMs, shift_t::PMs};
-			shifts.insert(shifts.end(), weekend_shifts.begin(), weekend_shifts.end());
-			return shifts;
-		} else
-		{
-
-		}
-
-		return shifts;
-	}
-
 private:
 	value_t value;
 };
 
-struct placement_t
+struct schedule_t
 {
-	shift_t shift;
-	bool invariant;
-
-	explicit placement_t(const shift_t shift, const bool invariant = false) : shift{shift}, invariant{invariant}
-	{}
-};
-
-struct day_t
-{
-	placement_t brett;
-	placement_t kayda;
-	placement_t tim;
-	placement_t braeden;
-
-	weekday_t day;
-
-	day_t(const placement_t& brett, const placement_t& kayda, const placement_t& tim, const placement_t& braeden,
-		const weekday_t day): brett{brett}, kayda{kayda}, tim{tim}, braeden{braeden}, day{day}
-	{}
-};
-
-struct week_t
-{
-	day_t days[7];
-
-	explicit week_t(const day_t days[7]): days{}
-	{
-		std::memcpy(this->days, days, sizeof(day_t) * 7);
-	}
+	std::array<shift_t, TOTALS_SHIFTS_PER_WEEK> shifts;
 };
 
 class shift_solver_t
 {
 public:
-	static day_t generate_random_day(const weekday_t day)
-	{
-		auto& random = get_random();
-		std::array<placement_t, 3> placements{};
-		if (days_require_pair(day))
-		{} else
-		{}
-	}
+
 
 private:
 };
